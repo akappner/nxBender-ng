@@ -29,14 +29,14 @@ class PPPSession(object):
                 'noipdefault',
                 'noccp',    # server is buggy
                 'noauth',
-                'nomp',
+#                'nomp',
                 'usepeerdns',
         ]
 
     def run(self):
         master, slave = pty.openpty()
         self.pty = master
-
+        logging.info(self.pppargs);
         try:
             self.pppd = subprocess.Popen(['pppd'] + self.pppargs,
                                          stdin = slave,
@@ -47,7 +47,7 @@ class PPPSession(object):
             sys.exit(1)
 
         os.close(slave)
-
+        logging.info("pppd started")
         self.tunsock = sslconn.SSLTunnel(self.session_id, self.options, self.options.server, self.options.port)
         self.pty = master
 
@@ -84,6 +84,10 @@ class PPPSession(object):
                 logger("pppd exited with code %d" % code)
 
                 if code in [2, 3]:
+                    # Read and print any remaining stderr output
+                    remaining_output = self.pppd.stderr.read().decode('utf-8', errors='replace').strip()
+                    if remaining_output:
+                        logging.error("pppd output:\n%s" % remaining_output)
                     logging.warn("Are you root? You almost certainly need to be root")
             else:
                 self.pppd.send_signal(signal.SIGHUP)
