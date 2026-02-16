@@ -34,6 +34,12 @@ class PPPSession(object):
         ]
 
     def run(self):
+        """
+        Run the PPP session.
+
+        Returns:
+            True if the session was terminated by user action (Ctrl-C), False otherwise.
+        """
         master, slave = pty.openpty()
         self.pty = master
         logging.info(self.pppargs);
@@ -97,6 +103,9 @@ class PPPSession(object):
             self.pppd.wait()
             signal.signal(signal.SIGINT, old_sigint)
             self.tunsock.close()
+
+        # Return True if killed by user (Ctrl-C), False otherwise
+        return getattr(self, 'killing_pppd', False)
 
     def _pump(self):
         r_set = [self.tunsock, self.pppd.stderr]

@@ -7,6 +7,7 @@ import ipaddress
 import atexit
 import subprocess
 import sys
+import time
 
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
@@ -228,8 +229,15 @@ class NXSession(object):
             logging.warn("Unknown tunnel version '%s'" % tunnel_version)
             auth_key = self.srv_options['SessionId']    # a guess
 
-        pppd = ppp.PPPSession(self.options, auth_key, routecallback=self.setup_routes)
-        pppd.run()
+        while True:
+            pppd = ppp.PPPSession(self.options, auth_key, routecallback=self.setup_routes)
+            killed_by_user = pppd.run()
+
+            if killed_by_user or not self.options.reconnect:
+                break
+
+            logging.info("Reconnecting in 2 seconds...")
+            time.sleep(2)
 
     def setup_routes(self, gateway):
         ip = pyroute2.IPRoute()

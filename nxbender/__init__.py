@@ -22,6 +22,8 @@ parser.add_argument('-m', '--max-line', type=int, default=1500, help='Maximum le
 
 parser.add_argument('--pinentry', help='Program to use to prompt for interactive responses eg. OTP codes. Specify "none" to just prompt on the terminal.')
 
+parser.add_argument('--reconnect', action='store_true', help='Automatically reconnect if pppd terminates')
+
 parser.add_argument('--debug', action='store_true', help='Show debugging information')
 parser.add_argument('-q', '--quiet', action='store_true', help='Don\'t output basic info whilst running')
 parser.add_argument('--show-ppp-log', action='store_true', help='Print PPP log messages to stdout')
